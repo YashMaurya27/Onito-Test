@@ -6,6 +6,8 @@ import {
   Box,
   Button,
   FormHelperText,
+  IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
@@ -14,8 +16,13 @@ import {
 import "../index.css";
 import { codeToTitle } from "../../../functions";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 
-export default function StepOne() {
+interface StepOneI {
+  handleNext: () => void;
+}
+
+export default function StepOne(props: StepOneI) {
   const personalDetailsSchema: any = yup.object().shape({
     name: yup
       .string()
@@ -43,7 +50,6 @@ export default function StepOne() {
       .oneOf(["Aadhar", "PAN"], "*Please enter a valid government ID type"),
     govtId: yup.string().test("govtId", "Invalid ID", function (value) {
       const govtIdType = this.resolve(yup.ref("govtIdType"));
-
       if (govtIdType === "Aadhar") {
         return yup
           .string()
@@ -61,27 +67,18 @@ export default function StepOne() {
           )
           .isValidSync(value);
       }
-
-      return true; // If govtIdType is neither Aadhar nor PAN, no additional validation
+      return true;
     }),
   });
 
-  const addressDetailsSchema = yup.object().shape({
-    address: yup.string(),
-    state: yup.string(),
-    city: yup.string(),
-    country: yup.string(),
-    pincode: yup.string(),
-  });
-
-  const { control, handleSubmit, formState } = useForm({
+  const { control, handleSubmit, formState, setValue } = useForm({
     resolver: yupResolver(personalDetailsSchema),
   });
   const { errors } = formState;
 
   const onSubmit = (e: any) => {
-    alert("submit");
     console.log("submit", e);
+    props.handleNext();
   };
 
   const requiredFields = Object.keys(personalDetailsSchema.fields).filter(
@@ -137,21 +134,41 @@ export default function StepOne() {
                             width: "50%",
                           }}
                         >
-                          <Select
-                            labelId={fieldName + "label"}
-                            error={errors?.[fieldName] != undefined}
-                            {...field}
+                          <Box
+                            sx={{
+                              display: "flex",
+                            }}
                           >
-                            {Array.from(fieldData?.["_whitelist"]).map(
-                              (item) => {
-                                return (
-                                  <MenuItem
-                                    value={`${item}`}
-                                  >{`${item}`}</MenuItem>
-                                );
-                              }
+                            <Select
+                              labelId={fieldName + "label"}
+                              error={errors?.[fieldName] != undefined}
+                              sx={{
+                                width:
+                                  field["value"] && field["value"] != ""
+                                    ? "80%"
+                                    : "100%",
+                              }}
+                              {...field}
+                            >
+                              {Array.from(fieldData?.["_whitelist"]).map(
+                                (item) => {
+                                  return (
+                                    <MenuItem
+                                      value={`${item}`}
+                                    >{`${item}`}</MenuItem>
+                                  );
+                                }
+                              )}
+                            </Select>
+                            {field["value"] && field["value"] != "" && (
+                              <IconButton
+                                onClick={() => setValue(fieldName, "")}
+                                edge="end"
+                              >
+                                <HighlightOffIcon />
+                              </IconButton>
                             )}
-                          </Select>
+                          </Box>
                           {errors?.[fieldName]?.message && (
                             <FormHelperText
                               sx={{
@@ -173,6 +190,25 @@ export default function StepOne() {
                           type={
                             fieldData?.["type"] === "number" ? "number" : "text"
                           }
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment
+                                position="end"
+                                sx={{
+                                  margin: "20px 0",
+                                }}
+                              >
+                                {field["value"] && field["value"] != "" && (
+                                  <IconButton
+                                    onClick={() => setValue(fieldName, "")}
+                                    edge="end"
+                                  >
+                                    <HighlightOffIcon />
+                                  </IconButton>
+                                )}
+                              </InputAdornment>
+                            ),
+                          }}
                           {...field}
                           error={errors?.[fieldName] != undefined}
                           helperText={
@@ -199,7 +235,7 @@ export default function StepOne() {
             color="primary"
             endIcon={<KeyboardDoubleArrowRightIcon />}
           >
-            Proceed
+            Next
           </Button>
         </Box>
       </form>

@@ -1,4 +1,3 @@
-import * as React from "react";
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
@@ -8,6 +7,8 @@ import Typography from "@mui/material/Typography";
 import { AddressDetailsI, PersonalDetailsI } from "./types";
 import StepOne from "./steps/StepOne";
 import StepTwo from "./steps/StepTwo";
+import { useEffect, useState } from "react";
+import { GET } from "../../functions";
 
 const steps = ["Personal Details", "Address Details"];
 
@@ -16,8 +17,9 @@ interface StepWizardI {
 }
 
 export default function StepWizard(props: StepWizardI) {
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [completed, setCompleted] = React.useState<{
+  const [activeStep, setActiveStep] = useState(0);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [completed, setCompleted] = useState<{
     [k: number]: boolean;
   }>({});
   const totalSteps = () => {
@@ -37,10 +39,7 @@ export default function StepWizard(props: StepWizardI) {
   };
 
   const handleNext = () => {
-    const newActiveStep =
-      isLastStep() && !allStepsCompleted()
-        ? steps.findIndex((step, i) => !(i in completed))
-        : activeStep + 1;
+    const newActiveStep = activeStep + 1;
     setActiveStep(newActiveStep);
   };
 
@@ -63,28 +62,37 @@ export default function StepWizard(props: StepWizardI) {
   const renderStep = (step: number) => {
     switch (step) {
       case 0:
-        return <StepOne />;
+        return <StepOne handleNext={handleNext} />;
       case 1:
-        return <StepTwo />;
+        return <StepTwo countries={countries} />;
       default:
-        return <StepOne />;
+        return <StepOne handleNext={handleNext} />;
     }
   };
+
+  useEffect(() => {
+    GET("all").then((res: any) => {
+      if (res["success"]) {
+        const countryNames = res?.['data'].map((item: any) => {
+          return item?.['name']?.['common'] ?? 'N/A';
+        })
+        setCountries(countryNames ?? []);
+      }
+    });
+  }, []);
 
   return (
     <Box sx={{ width: "100%" }}>
       <Stepper nonLinear activeStep={activeStep}>
         {steps.map((label, index) => (
           <Step key={label} completed={completed[index]}>
-            <StepButton color="inherit">
-              {label}
-            </StepButton>
+            <StepButton color="inherit">{label}</StepButton>
           </Step>
         ))}
       </Stepper>
       <div>
         {allStepsCompleted() ? (
-          <React.Fragment>
+          <>
             <Typography sx={{ mt: 2, mb: 1 }}>
               All steps completed - you&apos;re finished
             </Typography>
@@ -92,9 +100,9 @@ export default function StepWizard(props: StepWizardI) {
               <Box sx={{ flex: "1 1 auto" }} />
               <Button onClick={handleReset}>Reset</Button>
             </Box>
-          </React.Fragment>
+          </>
         ) : (
-          <React.Fragment>
+          <>
             <Box
               sx={{
                 width: {
@@ -106,12 +114,12 @@ export default function StepWizard(props: StepWizardI) {
                 margin: "10px auto",
                 boxShadow:
                   "rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px",
-                padding: '20px 30px'
+                padding: "20px 30px",
               }}
             >
               {renderStep(activeStep)}
             </Box>
-          </React.Fragment>
+          </>
         )}
       </div>
     </Box>
