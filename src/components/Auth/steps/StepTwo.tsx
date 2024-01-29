@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -17,16 +17,20 @@ import {
 } from "@mui/material";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import { useDispatch } from "react-redux";
 
 interface StepTwoI {
   countries: string[];
+  handleNext: () => void;
 }
 
 export default function StepTwo(props: StepTwoI) {
   const [filteredCountries, setFilteredCountries] = useState([
     ...(props?.countries ?? []),
   ]);
-  // const [countrySearch, setCountrySearch] = useState<string>();
+  const [countrySearch, setCountrySearch] = useState<string>();
+  const [countryLoad, setCountryLoad] = useState(false);
+  const isFirstRender = useRef<boolean>(true);
   const addressDetailsSchema: any = yup.object().shape({
     address: yup.string(),
     state: yup.string(),
@@ -37,6 +41,7 @@ export default function StepTwo(props: StepTwoI) {
       .required("*Please select the country"),
     pincode: yup.string(),
   });
+  const dispatch = useDispatch();
 
   const requiredFields = Object.keys(addressDetailsSchema.fields).filter(
     (fieldName) => {
@@ -57,26 +62,61 @@ export default function StepTwo(props: StepTwoI) {
   const { errors } = formState;
 
   const onSubmit = (e: any) => {
-    console.log("submit", e);
+    let stepOneData: any = sessionStorage.getItem("step_one_data");
+    stepOneData = JSON.parse(stepOneData || '');
+    dispatch({
+      type: 'ADD_USER',
+      payload: {
+        ...stepOneData,
+        ...e
+      }
+    });
+    props.handleNext();
   };
 
-  // const searchHandler = (txt: string) => {
-  //   clearTimeout(timeoutId);
+  const handleAutoComplete = (e: any, val: any) => {
+    setValue('country', e.target.textContent || val);
+  };
 
-  //   // Set a new timeout for 2000 milliseconds (2 seconds)
-  //   const newTimeoutId = setTimeout(() => {
-  //     // Implement your API call logic here
-  //     console.log('Making API call with search term:', value);
-  //   }, 2000);
+  const fetchSearchedCountries = (name: string) => {
+    GET(`name/${name}`, {}, true)
+      .then((res) => {
+        if (res['success']) {
+          const countryNames = res?.['data'].map((item: any) => {
+            return item?.['name']?.['common'] ?? 'N/A';
+          });
+          setFilteredCountries(countryNames);
+          setCountryLoad(false);
+        }
+      })
+  };
 
-  //   // Save the new timeout ID in the state
-  //   setTimeoutId(newTimeoutId);
-  //   GET(`name/${txt}`);
-  // }
-
-  const handleAutoComplete = (e: any) => {
-    setValue('country', e.target.textContent);
+  const countryError = (fieldName: string, field: any) => {
+    return errors?.[fieldName] != undefined &&
+      (
+        field?.['value'] === undefined ||
+        field['value'] === '' ||
+        field['value'] === null
+      )
   }
+
+  useEffect(() => {
+    if (isFirstRender.current === false && countrySearch) {
+      setCountryLoad(true);
+      const myTimeout = setTimeout(() => {
+        if (countrySearch !== '') {
+          fetchSearchedCountries(countrySearch);
+        } else {
+          setFilteredCountries(props.countries);
+          setCountryLoad(false);
+        }
+      }, 1500)
+      return () => {
+        clearTimeout(myTimeout)
+      }
+    }
+    isFirstRender.current = false;
+  }, [countrySearch]);
 
   return (
     <>
@@ -124,43 +164,41 @@ export default function StepTwo(props: StepTwoI) {
                             }}
                           >
                             <Autocomplete
-                              options={filteredCountries}
+                              options={countryLoad === true ? [] : filteredCountries}
                               getOptionLabel={(option) => option}
-                              sx={{
-                                width:
-                                  field["value"] && field["value"] != ""
-                                    ? "80%"
-                                    : "100%",
-                              }}
+                              fullWidth
+                              loading={countryLoad}
+                              loadingText={'Please wait..'}
                               renderInput={(params) => {
-                                console.log('searchbar', params);
                                 return (
-                                <TextField
-                                  {...params}
-                                  onChange={(e) => {
-                                    const txt = e.target.value;
-                                    // searchHandler(txt);
-                                  }}
-                                  label="Choose a country"
-                                  variant="outlined"
-                                />
-                              )}}
+                                  <TextField
+                                    {...params}
+                                    value={countrySearch}
+                                    onChange={(e) => {
+                                      const txt = e.target.value;
+                                      setCountrySearch(txt);
+                                    }}
+                                    error={
+                                      countryError(fieldName, field)
+                                    }
+                                    label="Choose a country"
+                                    variant="outlined"
+                                    onKeyDown={(event) => {
+                                      if (event.key === 'Enter') {
+                                        event.preventDefault();
+                                      }
+                                    }}
+                                  />
+                                )
+                              }}
                               isOptionEqualToValue={(option, value) =>
                                 option === value
                               }
                               {...field}
                               onChange={handleAutoComplete}
                             />
-                            {field["value"] && field["value"] != "" && (
-                              <IconButton
-                                onClick={() => setValue(fieldName, "")}
-                                edge="end"
-                              >
-                                <HighlightOffIcon />
-                              </IconButton>
-                            )}
                           </Box>
-                          {errors?.[fieldName]?.message && (
+                          {countryError(fieldName, field) && (
                             <FormHelperText
                               sx={{
                                 color: "#d32f2f",
@@ -209,8 +247,6 @@ export default function StepTwo(props: StepTwoI) {
                         />
                       )}
                     </Box>
-                    {console.log("fieldData for", fieldName, fieldData, field)}
-                    {console.log("errors", errors)}
                   </>
                 )}
               />
@@ -228,7 +264,7 @@ export default function StepTwo(props: StepTwoI) {
             color="primary"
             endIcon={<KeyboardDoubleArrowRightIcon />}
           >
-            Next
+            Submit
           </Button>
         </Box>
       </form>

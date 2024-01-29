@@ -7,68 +7,47 @@ import Typography from "@mui/material/Typography";
 import { AddressDetailsI, PersonalDetailsI } from "./types";
 import StepOne from "./steps/StepOne";
 import StepTwo from "./steps/StepTwo";
-import { useEffect, useState } from "react";
-import { GET } from "../../functions";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { GET, codeToTitle } from "../../functions";
+import DataTable from 'datatables.net-dt';
+import 'datatables.net-responsive-dt';
+import { useSelector } from "react-redux";
+import './index.css';
 
 const steps = ["Personal Details", "Address Details"];
 
-interface StepWizardI {
-  formData: Array<PersonalDetailsI | AddressDetailsI> | undefined;
-}
-
-export default function StepWizard(props: StepWizardI) {
+export default function StepWizard() {
   const [activeStep, setActiveStep] = useState(0);
   const [countries, setCountries] = useState<string[]>([]);
   const [completed, setCompleted] = useState<{
     [k: number]: boolean;
   }>({});
-  const totalSteps = () => {
-    return steps.length;
-  };
-
-  const completedSteps = () => {
-    return Object.keys(completed).length;
-  };
-
-  const isLastStep = () => {
-    return activeStep === totalSteps() - 1;
-  };
-
-  const allStepsCompleted = () => {
-    return completedSteps() === totalSteps();
-  };
-
+  const registeredUsers = useSelector((state: any) => state?.users ?? []);
+  console.log('stepWizard redux', registeredUsers);
   const handleNext = () => {
     const newActiveStep = activeStep + 1;
     setActiveStep(newActiveStep);
   };
+  const tableInit = useRef(false);
+  const tableFields = ['name', 'age', 'sex', 'mobile', 'govtIdType', 'govtId', 'address', 'state', 'city', 'country', 'pincode'];
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const handleComplete = () => {
-    const newCompleted = completed;
-    newCompleted[activeStep] = true;
-    setCompleted(newCompleted);
-    handleNext();
-  };
-
-  const handleReset = () => {
-    setActiveStep(0);
-    setCompleted({});
-  };
+  // const handleReset = () => {
+  //   setActiveStep(0);
+  //   setCompleted({});
+  // };
 
   const renderStep = (step: number) => {
     switch (step) {
       case 0:
         return <StepOne handleNext={handleNext} />;
       case 1:
-        return <StepTwo countries={countries} />;
+        return <StepTwo countries={countries} handleNext={handleNext} />;
       default:
         return <StepOne handleNext={handleNext} />;
     }
   };
+
+  let table: any;
 
   useEffect(() => {
     GET("all").then((res: any) => {
@@ -81,8 +60,23 @@ export default function StepWizard(props: StepWizardI) {
     });
   }, []);
 
+  useEffect(() => {
+    if (tableInit.current === false && registeredUsers.length > 0) {
+      table = new DataTable('#usersTable', {
+        responsive: true,
+      });
+      tableInit.current = true;
+    }
+  }, [registeredUsers]);
+
+  useEffect(() => {
+    if (activeStep === steps.length) {
+      setActiveStep(0);
+    }
+  }, [activeStep]);
+
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%", margin: 'auto' }}>
       <Stepper nonLinear activeStep={activeStep}>
         {steps.map((label, index) => (
           <Step key={label} completed={completed[index]}>
@@ -91,17 +85,7 @@ export default function StepWizard(props: StepWizardI) {
         ))}
       </Stepper>
       <div>
-        {allStepsCompleted() ? (
-          <>
-            <Typography sx={{ mt: 2, mb: 1 }}>
-              All steps completed - you&apos;re finished
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-              <Box sx={{ flex: "1 1 auto" }} />
-              <Button onClick={handleReset}>Reset</Button>
-            </Box>
-          </>
-        ) : (
+        {(
           <>
             <Box
               sx={{
@@ -119,6 +103,42 @@ export default function StepWizard(props: StepWizardI) {
             >
               {renderStep(activeStep)}
             </Box>
+          </>
+        )}
+      </div>
+      <div className="table-container">
+        {registeredUsers.length > 0 && (
+          <>
+            <Typography fontSize={22} fontWeight={'bold'}>
+              Registered Users
+            </Typography>
+            <hr />
+            <table id="usersTable">
+              <thead>
+                <tr>
+                  {tableFields.map((field) => {
+                    return (
+                      <th>
+                        {codeToTitle(field)}
+                      </th>
+                    )
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {registeredUsers.map((user: any) => {
+                  return (
+                    <tr>
+                      {tableFields.map((property) => {
+                        return (
+                          <td>{user?.[property] || 'N/A'}</td>
+                        )
+                      })}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </>
         )}
       </div>

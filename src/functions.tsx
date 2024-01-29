@@ -46,7 +46,7 @@ export const GET = (
   if (!fullURL) {
     url = BASE_URL + endpoint;
   } else {
-    url = endpoint;
+    url = BASE_URL + endpoint;
   }
   const paramKeys = Object.keys(params);
   if (paramKeys.length > 0) {

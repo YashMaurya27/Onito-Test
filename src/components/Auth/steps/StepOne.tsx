@@ -77,7 +77,7 @@ export default function StepOne(props: StepOneI) {
   const { errors } = formState;
 
   const onSubmit = (e: any) => {
-    console.log("submit", e);
+    sessionStorage.setItem("step_one_data", JSON.stringify(e));
     props.handleNext();
   };
 

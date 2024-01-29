@@ -1,6 +1,47 @@
-/* FORM STYLING  */
+.table-container {
+    overflow-x: auto;
+    margin: 50px auto;
+    padding: 20px;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
 
-.input-flex {
-    display: flex;
-    justify-content: space-between;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.table-container div:first-child {
+    margin: 30px 0;
+}
+
+.table-container div:nth-child(2) {
+    margin: 30px 0;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+@media only screen and (max-width: 600px) {
+    .table-container div:first-child {
+        margin: 20px 0;
+        width: 100%;
+    }
+
+    /* .table-container div:first-child > label {
+        
+    } */
+    
+    .table-container div:nth-child(2) {
+        margin: 20px 0;
+        width: 100%;
+    }
 }
