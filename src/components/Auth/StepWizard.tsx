@@ -12,6 +12,7 @@ import { GET, codeToTitle } from "../../functions";
 import DataTable from 'datatables.net-dt';
 // import 'datatables.net-responsive-dt';
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import './index.css';
 
 const steps = ["Personal Details", "Address Details"];
@@ -47,6 +48,7 @@ export default function StepWizard() {
   };
 
   let table: any;
+  const notify = (message: string) => toast.success(message);
 
   useEffect(() => {
     GET("all").then((res: any) => {
@@ -57,18 +59,7 @@ export default function StepWizard() {
         setCountries(countryNames ?? []);
       }
     });
-    function handleResize() {
-      table?.columns.adjust().responsive.recalc();
-    }
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    }
   }, []);
-
-  const handleResize = () => {
-
-  }
 
   useEffect(() => {
     if (tableInit.current === false && registeredUsers.length > 0) {
@@ -82,6 +73,8 @@ export default function StepWizard() {
 
   useEffect(() => {
     if (activeStep === steps.length) {
+      const total = registeredUsers.length;
+      notify(`${registeredUsers[total - 1]?.['name']} registered successfully`);
       setActiveStep(0);
     }
   }, [activeStep]);
