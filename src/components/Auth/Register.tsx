@@ -1,17 +1,22 @@
 import React, { useState } from "react";
 import StepWizard from "./StepWizard";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { AddressDetailsI, PersonalDetailsI } from "./types";
 
 export default function Register() {
 
   return (
     <section>
-      <h1>Register</h1>
+      <Typography fontSize={24} fontWeight={'bolder'} margin={'20px 0'}>
+        Onito Test
+      </Typography>
       <Box
         sx={{
-          width: '95%',
-          margin: "0 auto",
+          width: {
+            // xs: '350px',
+            sm: '95%'
+          },
+          margin: "auto",
           maxWidth: '1440px',
         }}
       >

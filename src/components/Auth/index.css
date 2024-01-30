@@ -1,21 +1,38 @@
 .table-container {
     overflow-x: auto;
+    width: 85%;
     margin: 50px auto;
     padding: 20px;
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
 }
 
+.table-div {
+    width: 95%;
+    margin: 20px auto;
+    max-width: 1280px;
+    overflow-x: auto;
+}
+
+hr {
+    opacity: 30%;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
 }
 
-.table-container div:first-child {
+.table-div>div {
+    position: relative;
+}
+
+.table-div>div div:first-child {
+    display: none;
     margin: 30px 0;
 }
 
-.table-container div:nth-child(2) {
+.table-div>div div:nth-child(2) {
+    display: none;
     margin: 30px 0;
 }
 
@@ -30,18 +47,40 @@ th {
     background-color: #f2f2f2;
 }
 
-@media only screen and (max-width: 600px) {
-    .table-container div:first-child {
-        margin: 20px 0;
-        width: 100%;
+.dataTables_paginate {
+    display: none;
+}
+
+.dataTables_info {
+    display: none;
+}
+
+@media only screen and (max-width: 994px) {
+    th {
+        display: table-cell !important;
     }
 
-    /* .table-container div:first-child > label {
-        
-    } */
-    
-    .table-container div:nth-child(2) {
-        margin: 20px 0;
-        width: 100%;
+    td {
+        display: table-cell !important;
+    }
+}
+
+@media only screen and (max-width: 640px) {
+    .table-div>div div:first-child {
+        display: none;
+        width: fit-content;
+        margin: 30px 0;
+        position: sticky;
+        left: 0;
+        text-align: start;
+    }
+
+    .table-div>div div:nth-child(2) {
+        display: none;
+        width: fit-content;
+        margin: 30px 0;
+        position: sticky;
+        left: 0;
+        text-align: start;
     }
 }

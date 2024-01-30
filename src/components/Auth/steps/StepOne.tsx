@@ -108,13 +108,28 @@ export default function StepOne(props: StepOneI) {
                   <>
                     <Box
                       sx={{
-                        display: "flex",
+                        display: {
+                          xs: "block",
+                          sm: "flex",
+                          md: "flex"
+                        },
                         justifyContent: "space-between",
                         alignItems: "center",
-                        margin: "20px 0",
+                        width: '95%',
+                        margin: "20px auto",
                       }}
                     >
-                      <InputLabel id={fieldName + "label"}>
+                      <InputLabel
+                        sx={{
+                          textAlign: 'start',
+                          width: {
+                            xs: '100%',
+                            sm: "50%",
+                            md: '50%'
+                          },
+                        }}
+                        id={fieldName + "label"}
+                      >
                         {codeToTitle(fieldName)}{" "}
                         {requiredFields.includes(fieldName) && (
                           <span
@@ -131,25 +146,36 @@ export default function StepOne(props: StepOneI) {
                           sx={{
                             display: "flex",
                             flexDirection: "column",
-                            width: "50%",
+                            width: {
+                              xs: '100%',
+                              sm: "50%",
+                              md: '50%'
+                            },
                           }}
                         >
                           <Box
                             sx={{
                               display: "flex",
+                              justifyContent: 'start'
                             }}
                           >
                             <Select
                               labelId={fieldName + "label"}
-                              error={errors?.[fieldName] != undefined}
+                              error={errors?.[fieldName] !== undefined}
                               sx={{
                                 width:
-                                  field["value"] && field["value"] != ""
-                                    ? "80%"
+                                  field["value"] && field["value"] !== ""
+                                    ? "90%"
                                     : "100%",
                               }}
+                              defaultValue={'Please Select'}
                               {...field}
+                              displayEmpty 
+                              inputProps={{ 'aria-label': 'Select a value' }}
                             >
+                              <MenuItem value="" disabled>
+                                Select an option
+                              </MenuItem>
                               {Array.from(fieldData?.["_whitelist"]).map(
                                 (item) => {
                                   return (
@@ -160,9 +186,9 @@ export default function StepOne(props: StepOneI) {
                                 }
                               )}
                             </Select>
-                            {field["value"] && field["value"] != "" && (
+                            {field["value"] && field["value"] !== "" && (
                               <IconButton
-                                onClick={() => setValue(fieldName, "")}
+                                onClick={() => setValue(fieldName, undefined)}
                                 edge="end"
                               >
                                 <HighlightOffIcon />
@@ -185,7 +211,11 @@ export default function StepOne(props: StepOneI) {
                           label={"Enter " + fieldName}
                           variant="standard"
                           sx={{
-                            width: "50%",
+                            width: {
+                              xs: '100%',
+                              sm: "50%",
+                              md: '50%'
+                            },
                           }}
                           type={
                             fieldData?.["type"] === "number" ? "number" : "text"
@@ -198,7 +228,7 @@ export default function StepOne(props: StepOneI) {
                                   margin: "20px 0",
                                 }}
                               >
-                                {field["value"] && field["value"] != "" && (
+                                {field["value"] && field["value"] !== "" && (
                                   <IconButton
                                     onClick={() => setValue(fieldName, "")}
                                     edge="end"
@@ -210,7 +240,7 @@ export default function StepOne(props: StepOneI) {
                             ),
                           }}
                           {...field}
-                          error={errors?.[fieldName] != undefined}
+                          error={errors?.[fieldName] !== undefined}
                           helperText={
                             errors?.[fieldName]?.message &&
                             `${errors?.[fieldName]?.message}`
@@ -228,6 +258,9 @@ export default function StepOne(props: StepOneI) {
           sx={{
             display: "flex",
             justifyContent: "end",
+            width: '95%',
+            margin: "auto",
+            padding: '10px 0'
           }}
         >
           <Button

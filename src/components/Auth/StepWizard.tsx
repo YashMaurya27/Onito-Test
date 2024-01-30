@@ -10,7 +10,7 @@ import StepTwo from "./steps/StepTwo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GET, codeToTitle } from "../../functions";
 import DataTable from 'datatables.net-dt';
-import 'datatables.net-responsive-dt';
+// import 'datatables.net-responsive-dt';
 import { useSelector } from "react-redux";
 import './index.css';
 
@@ -23,7 +23,6 @@ export default function StepWizard() {
     [k: number]: boolean;
   }>({});
   const registeredUsers = useSelector((state: any) => state?.users ?? []);
-  console.log('stepWizard redux', registeredUsers);
   const handleNext = () => {
     const newActiveStep = activeStep + 1;
     setActiveStep(newActiveStep);
@@ -58,12 +57,24 @@ export default function StepWizard() {
         setCountries(countryNames ?? []);
       }
     });
+    function handleResize() {
+      table?.columns.adjust().responsive.recalc();
+    }
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    }
   }, []);
+
+  const handleResize = () => {
+
+  }
 
   useEffect(() => {
     if (tableInit.current === false && registeredUsers.length > 0) {
       table = new DataTable('#usersTable', {
-        responsive: true,
+        // responsive: true,
+        // autoWidth: true
       });
       tableInit.current = true;
     }
@@ -76,8 +87,16 @@ export default function StepWizard() {
   }, [activeStep]);
 
   return (
-    <Box sx={{ width: "100%", margin: 'auto' }}>
-      <Stepper nonLinear activeStep={activeStep}>
+    // <Box>
+    <>
+      <Stepper
+        sx={{
+          width: '90%',
+          margin: '10px auto'
+        }}
+        nonLinear
+        activeStep={activeStep}
+      >
         {steps.map((label, index) => (
           <Step key={label} completed={completed[index]}>
             <StepButton color="inherit">{label}</StepButton>
@@ -98,7 +117,8 @@ export default function StepWizard() {
                 margin: "10px auto",
                 boxShadow:
                   "rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px",
-                padding: "20px 30px",
+                padding: "10px 0px",
+                boxSizing: 'border-box'
               }}
             >
               {renderStep(activeStep)}
@@ -106,13 +126,14 @@ export default function StepWizard() {
           </>
         )}
       </div>
-      <div className="table-container">
-        {registeredUsers.length > 0 && (
-          <>
-            <Typography fontSize={22} fontWeight={'bold'}>
-              Registered Users
-            </Typography>
-            <hr />
+
+      {registeredUsers.length > 0 && (
+        <div className="table-container">
+          <Typography fontSize={22} fontWeight={'bold'}>
+            Registered Users
+          </Typography>
+          <hr />
+          <div className="table-div">
             <table id="usersTable">
               <thead>
                 <tr>
@@ -139,9 +160,9 @@ export default function StepWizard() {
                 })}
               </tbody>
             </table>
-          </>
-        )}
-      </div>
-    </Box>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
