@@ -37,7 +37,11 @@ export default function StepTwo(props: StepTwoI) {
       .string()
       .oneOf(filteredCountries, "*Please select a valid country")
       .required("*Please select the country"),
-    pincode: yup.string(),
+    pincode: yup
+      .number()
+      .integer("*Please enter a valid pincode")
+      .typeError("*Please enter a valid pincode")
+      .positive("*Please enter a valid pincode"),
   });
   const dispatch = useDispatch();
 
